@@ -1,533 +1,597 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>挑機報價單生成器</title>
-    <style>
-        :root {
-            /* 預設黑金風格變數 */
-            --bg-color: #333;
-            --container-bg: #444;
-            --text-color: #fff;
-            --border-color: #666;
-            --th-bg: #555;
-            --input-bg: #222;
-            --input-border: #666;
-            --highlight-color: #ffd700;
-            --price-color: #ffd700;
-            --strike-color: #ccc;
-            --table-header-text: #fff;
-        }
-        /* 白藍風格變數 */
-        body.blue-theme {
-            --bg-color: #f5f5f5;
-            --container-bg: #fff;
-            --text-color: #333;
-            --border-color: #ddd;
-            --th-bg: #e9ecef;
-            --input-bg: #fff;
-            --input-border: #ccc;
-            --highlight-color: #0056b3;
-            --price-color: #0056b3;
-            --strike-color: #999;
-            --table-header-text: #333;
-        }
-        body {
-            font-family: "Microsoft JhengHei", sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .container {
-            width: 900px;
-            background-color: var(--container-bg);
-            padding: 30px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            position: relative;
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-        /* 頂部 Logo 區域 */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .logo-area img {
-            width: 60px;
-            height: auto;
-            display: block;
-        }
-        .logo-area h1 {
-            margin: 0;
-            font-size: 24px;
-            color: var(--text-color);
-        }
-        .logo-area p {
-            margin: 5px 0 0;
-            font-size: 14px;
-            color: var(--highlight-color);
-        }
-        .contact-info {
-            text-align: right;
-            font-size: 14px;
-            color: var(--text-color);
-        }
-        /* 表格樣式 */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            background-color: var(--th-bg);
-        }
-        th {
-            background-color: var(--th-bg);
-            color: var(--table-header-text);
-            padding: 10px;
-            text-align: center;
-            width: 15%;
-            border: 1px solid var(--border-color);
-        }
-        td {
-            padding: 8px;
-            vertical-align: middle;
-            text-align: center;
-            border: 1px solid var(--border-color);
-        }
-        /* 輸入框樣式 */
-        input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 8px;
-            background-color: var(--input-bg);
-            border: 1px solid var(--input-border);
-            color: var(--text-color);
-            box-sizing: border-box;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        input[type="text"]:focus, input[type="number"]:focus {
-            border-color: var(--highlight-color);
-            outline: none;
-        }
-        /* 價格區域 */
-        .price-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid var(--border-color);
-        }
-        .price-label {
-            font-size: 18px;
-            color: var(--text-color);
-        }
-        .price-value {
-            font-size: 48px;
-            color: var(--price-color);
-            font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            align-items: center;
-        }
-        .strikethrough {
-            text-decoration: line-through;
-            opacity: 0.8;
-        }
-        .currency {
-            font-size: 24px;
-            color: var(--price-color);
-            font-weight: bold;
-            margin-left: 5px;
-        }
-        /* 底部資訊 */
-        .footer-info {
-            margin-top: 30px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--text-color);
-        }
-        .highlight {
-            color: var(--highlight-color);
-        }
-        /* 按鈕區域 */
-        .btn-area {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .btn-add {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .btn-print {
-            background-color: var(--highlight-color);
-            color: #000;
-        }
-        .btn-del-row {
-            background-color: #f44336;
-            color: white;
-            padding: 5px 10px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-        .btn-theme {
-            background-color: #007bff;
-            color: white;
-        }
-        /* 新增 Excel 按鈕樣式 */
-        .btn-excel {
-            background-color: #217346; /* Excel 綠色 */
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        /* --- 截圖模式 (Cap Mode) 樣式 --- */
-        body.cap-mode .container {
-            box-shadow: none;
-        }
-        body.cap-mode input, body.cap-mode select {
-            background-color: transparent;
-            border: none;
-            color: var(--text-color);
-            padding-left: 0;
-            font-size: 16px;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            text-align: center;
-        }
-        body.cap-mode th {
-            background-color: transparent;
-            color: var(--text-color);
-            padding: 0;
-            border: none;
-        }
-        body.cap-mode td {
-            border: none;
-        }
-        body.cap-mode .btn-area, body.cap-mode .btn-del-row, body.cap-mode .add-row-btn {
-            display: none !important;
-        }
-        /* 截圖模式下的離開按鈕 */
-        #exitCapModeBtn {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background-color: #fff;
-            color: #000;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            z-index: 999;
-        }
-        body.cap-mode #exitCapModeBtn {
-            display: block;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>挑機報價單生成器</title>
+<style>
+:root {
+    /* 預設黑金風格變數 */
+    --bg-color: #333;
+    --container-bg: #444;
+    --text-color: #fff;
+    --border-color: #666;
+    --th-bg: #555;
+    --input-bg: #222;
+    --input-border: #666;
+    --highlight-color: #ffd700;
+    --price-color: #ffd700;
+    --strike-color: #ccc;
+    --table-header-text: #fff;
+}
+
+/* 白藍風格變數 */
+body.blue-theme {
+    --bg-color: #f5f5f5;
+    --container-bg: #fff;
+    --text-color: #333;
+    --border-color: #ddd;
+    --th-bg: #e9ecef;
+    --input-bg: #fff;
+    --input-border: #ccc;
+    --highlight-color: #0056b3;
+    --price-color: #0056b3;
+    --strike-color: #999;
+    --table-header-text: #333;
+}
+
+body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    width: 900px;
+    background-color: var(--container-bg);
+    padding: 30px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    position: relative;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+/* 頂部 Logo 區域 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-area img {
+    width: 60px;
+    height: auto;
+    display: block;
+}
+
+.logo-area h1 {
+    margin: 0;
+    font-size: 24px;
+    color: var(--text-color);
+}
+
+.logo-area p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: var(--highlight-color);
+}
+
+.contact-info {
+    text-align: right;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+/* 表格樣式 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: var(--th-bg);
+}
+
+th {
+    background-color: var(--th-bg);
+    color: var(--table-header-text);
+    padding: 10px;
+    text-align: center;
+    width: 15%;
+    border: 1px solid var(--border-color);
+}
+
+td {
+    padding: 8px;
+    vertical-align: middle;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+/* 輸入框樣式 */
+input[type="text"], input[type="number"], select {
+    width: 100%;
+    padding: 8px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-color);
+    box-sizing: border-box;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+input[type="text"]:focus, input[type="number"]:focus {
+    border-color: var(--highlight-color);
+    outline: none;
+}
+
+/* 價格區域 */
+.price-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border-color);
+}
+
+.price-label {
+    font-size: 18px;
+    color: var(--text-color);
+}
+
+.price-value {
+    font-size: 48px;
+    color: var(--price-color);
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    align-items: center;
+}
+
+.strikethrough {
+    text-decoration: line-through;
+    opacity: 0.8;
+}
+
+.currency {
+    font-size: 24px;
+    color: var(--price-color);
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* 底部資訊 */
+.footer-info {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-color);
+}
+
+.highlight {
+    color: var(--highlight-color);
+}
+
+/* 按鈕區域 */
+.btn-area {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.btn-add {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-print {
+    background-color: var(--highlight-color);
+    color: #000;
+}
+
+.btn-del-row {
+    background-color: #f44336;
+    color: white;
+    padding: 5px 10px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.btn-theme {
+    background-color: #007bff;
+    color: white;
+}
+
+/* 新增 Excel 按鈕樣式 */
+.btn-excel {
+    background-color: #217346; /* Excel 綠色 */
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* --- 截圖模式 (Cap Mode) 樣式 --- */
+body.cap-mode .container {
+    box-shadow: none;
+    background-color: transparent; /* 截圖時背景變透明，方便貼到白色背景 */
+}
+
+/* 1. 隱藏所有按鈕 */
+body.cap-mode .btn-area, 
+body.cap-mode .btn-del-row, 
+body.cap-mode .add-row-btn {
+    display: none !important;
+}
+
+/* 2. 表格結構保留 (保留格子線) */
+body.cap-mode th {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color); /* 保留表頭邊框 */
+    padding: 10px;
+}
+
+body.cap-mode td {
+    border: 1px solid var(--border-color); /* 保留表格格子線 */
+    background-color: transparent;
+    padding: 8px;
+}
+
+/* 3. 隱藏輸入框邊框與背景，但保留文字 */
+body.cap-mode input, 
+body.cap-mode select {
+    background-color: transparent;
+    border: none; /* 移除輸入框外框 */
+    color: var(--text-color);
+    padding: 0;
+    font-size: 16px;
+    text-align: center;
+    /* 移除選取時的藍色輪廓 */
+    outline: none; 
+    box-shadow: none;
+}
+
+/* 4. 特別針對「型號」欄位 (第 2 格) 做優化 */
+/* 型號欄位通常比較長，我們移除它的 padding 讓文字更貼近格子線，看起來更像印刷品 */
+body.cap-mode td:nth-child(2) input {
+    text-align: left; /* 型號通常靠左對齊比較好看 */
+    font-weight: bold; /* 稍微加粗型號 */
+}
+
+/* 5. 價格輸入框特殊處理 */
+body.cap-mode #promoPrice {
+    border-bottom: none !important; /* 移除價格下方的線條 */
+    font-size: 48px; /* 放大價格 */
+}
+
+/* 截圖模式下的離開按鈕 */
+#exitCapModeBtn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background-color: #fff;
+    color: #000;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 999;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+body.cap-mode #exitCapModeBtn {
+    display: block;
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- 頂部資訊 -->
-        <div class="header">
-            <div class="logo-area">
-                <img src="https://i.imgur.com/9o7Y7FR.jpeg" alt="挑機 Logo" id="companyLogo">
-                <div>
-                    <h1 id="companyName">挑機 MACAU ASSEMBLED COMPUTER</h1>
-                    <p id="companyTagline">自定砌機優惠組合</p>
-                </div>
-            </div>
-            <div class="contact-info">
-                <div>2852 1710</div>
-                <div>蛤巷5號地下</div>
+<div class="container">
+    <!-- 頂部資訊 -->
+    <div class="header">
+        <div class="logo-area">
+            <img src="https://i.imgur.com/9o7Y7FR.jpeg" alt="挑機 Logo" id="companyLogo">
+            <div>
+                <h1 id="companyName">挑機 MACAU ASSEMBLED COMPUTER</h1>
+                <p id="companyTagline">自定砌機優惠組合</p>
             </div>
         </div>
-        <!-- 規格表格 -->
-        <table id="configTable">
-            <thead>
-                <tr>
-                    <th style="width: 15%;">項目</th>
-                    <th style="width: 65%;">型號</th>
-                    <th style="width: 20%;">件數</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>CPU</td>
-                    <td><input type="text" id="cpu" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>主板</td>
-                    <td><input type="text" id="mb" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>RAM</td>
-                    <td><input type="text" id="ram" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>顯卡</td>
-                    <td><input type="text" id="gpu" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>系統盤</td>
-                    <td><input type="text" id="ssd" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>火牛</td>
-                    <td><input type="text" id="psu" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>散熱器</td>
-                    <td><input type="text" id="cooler" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>其他</td>
-                    <td><input type="text" id="other" value="Windows 11 Home 試用版安裝 + 送貨到樓下"></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <!-- 新增項目按鈕的位置 -->
-                <tr>
-                    <td colspan="3" style="padding: 5px 0;">
-                        <button type="button" class="btn btn-add add-row-btn" onclick="addNewRow()">+ 新增項目</button>
-                    </td>
-                </tr>
-                <tr id="caseRow">
-                    <td>機箱</td>
-                    <td><input type="text" id="case" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-            </tbody>
-        </table>
-        <!-- 價格區 -->
-        <div class="price-section">
-            <div style="display: flex; flex-direction: column;">
-                <span class="price-label">套餐優惠價</span>
-                <span class="price-label strikethrough" style="font-size: 14px; margin-top:5px;">原價</span>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                <div style="display: flex; align-items: center;">
-                    <input type="number" id="promoPrice" placeholder="輸入優惠價" style="width: 150px; text-align: right; font-size: 36px; color: var(--price-color); font-weight: bold; background: transparent; border: none; border-bottom: 1px solid var(--highlight-color);" oninput="calculatePrice()">
-                    <span class="currency" style="font-size: 24px; margin-left: 5px;">MOP</span>
-                </div>
-                <div id="originalPriceDisplay" class="strikethrough" style="font-size: 24px; color: var(--strike-color); margin-top: 5px;">0</div>
-            </div>
-        </div>
-        <!-- 底部資訊 -->
-        <div class="footer-info">
-            <div>
-                報價有效日期：<span id="validDate" style="color: var(--text-color); margin-left: 10px;"></span>
-            </div>
-            <div>
-                附七天非人為損壞及一年原廠保養
-            </div>
-            <div>
-                (包免費送貨)
-            </div>
-        </div>
-        <!-- 按鈕區域 -->
-        <div class="btn-area">
-            <button class="btn btn-print" onclick="window.print()">列印 / 另存 PDF</button>
-            <button class="btn btn-excel" onclick="pasteFromExcel()">📋 讀取剪貼簿 (Excel)</button>
-            <button class="btn btn-theme" onclick="toggleTheme()">切換主題</button>
-            <button class="btn btn-add" onclick="toggleCapMode()">截圖模式</button>
+        <div class="contact-info">
+            <div>2852 1710</div>
+            <div>蛤巷 5 號地下</div>
         </div>
     </div>
-    <!-- 離開截圖模式按鈕 -->
-    <button id="exitCapModeBtn" onclick="toggleCapMode()">離開截圖模式</button>
-    <script>
-        // 1. 自動計算日期 (今日 + 3日)
-        function setValidDate() {
-            const date = new Date();
-            date.setDate(date.getDate() + 3);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            document.getElementById('validDate').textContent = `${year}年${month}月${day}日`;
-        }
 
-        // 2. 自動計算原價
-        function calculatePrice() {
-            let promoPrice = parseFloat(document.getElementById('promoPrice').value);
-            if (isNaN(promoPrice)) {
-                document.getElementById('originalPriceDisplay').innerHTML = "0";
-                return;
-            }
-            // 計算邏輯: ROUNDUP(套餐優惠價*1.05, -3)
-            let rawPrice = promoPrice * 1.05;
-            let finalPrice = Math.ceil(rawPrice / 1000) * 1000;
-            // 顯示結果 (加千位分隔符)
-            document.getElementById('originalPriceDisplay').innerHTML = finalPrice.toLocaleString();
-        }
-
-        // 3. 新增項目功能
-        let rowCount = 1;
-        function addNewRow() {
-            rowCount++;
-            const tableBody = document.querySelector('#configTable tbody');
-            const caseRow = document.getElementById('caseRow');
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td>其他${rowCount}</td>
-                <td><input type="text" class="new-item-input" placeholder=""></td>
+    <!-- 規格表格 -->
+    <table id="configTable">
+        <thead>
+            <tr>
+                <th style="width: 15%;">項目</th>
+                <th style="width: 65%;">型號</th>
+                <th style="width: 20%;">件數</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>CPU</td>
+                <td><input type="text" id="cpu" placeholder=""></td>
                 <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                <td><button type="button" class="btn btn-del-row" onclick="deleteRow(this)">刪除</button></td>
-            `;
-            tableBody.insertBefore(newRow, caseRow);
-        }
-        function deleteRow(btn) {
-            const row = btn.parentNode.parentNode;
-            row.parentNode.removeChild(row);
-        }
+            </tr>
+            <tr>
+                <td>主板</td>
+                <td><input type="text" id="mb" placeholder=""></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>RAM</td>
+                <td><input type="text" id="ram" placeholder=""></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>顯卡</td>
+                <td><input type="text" id="gpu" placeholder=""></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>系統盤</td>
+                <td><input type="text" id="ssd" placeholder=""></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>火牛</td>
+                <td><input type="text" id="psu" placeholder=""></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>散熱器</td>
+                <td><input type="text" id="cooler" placeholder=""></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>其他</td>
+                <td><input type="text" id="other" value="Windows 11 Home 試用版安裝 + 送貨到樓下"></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <!-- 新增項目按鈕的位置 -->
+            <tr>
+                <td colspan="3" style="padding: 5px 0;">
+                    <button type="button" class="btn btn-add add-row-btn" onclick="addNewRow()">+ 新增項目</button>
+                </td>
+            </tr>
+            <tr id="caseRow">
+                <td>機箱</td>
+                <td><input type="text" id="case" placeholder=""></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+        </tbody>
+    </table>
 
-        // 4. 截圖模式切換
-        function toggleCapMode() {
-            document.body.classList.toggle('cap-mode');
-        }
+    <!-- 價格區 -->
+    <div class="price-section">
+        <div style="display: flex; flex-direction: column;">
+            <span class="price-label">套餐優惠價</span>
+            <span class="price-label strikethrough" style="font-size: 14px; margin-top:5px;">原價</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+            <div style="display: flex; align-items: center;">
+                <input type="number" id="promoPrice" placeholder="輸入優惠價" style="width: 150px; text-align: right; font-size: 36px; color: var(--price-color); font-weight: bold; background: transparent; border: none; border-bottom: 1px solid var(--highlight-color);" oninput="calculatePrice()">
+                <span class="currency" style="font-size: 24px; margin-left: 5px;">MOP</span>
+            </div>
+            <div id="originalPriceDisplay" class="strikethrough" style="font-size: 24px; color: var(--strike-color); margin-top: 5px;">0</div>
+        </div>
+    </div>
 
-        // 5. 主題切換功能
-        function toggleTheme() {
-            document.body.classList.toggle('blue-theme');
-            const isBlueTheme = document.body.classList.contains('blue-theme');
-            const logoImg = document.getElementById('companyLogo');
-            const companyName = document.getElementById('companyName');
-            const companyTagline = document.getElementById('companyTagline');
-            if (isBlueTheme) {
-                logoImg.src = "https://i.imgur.com/Ism8NL5.png";
-                companyName.textContent = "瓶科技有限公司";
-                companyTagline.textContent = "BOTTLE TECHNOLOGY LIMITED";
-            } else {
-                logoImg.src = "https://i.imgur.com/9o7Y7FR.jpeg";
-                companyName.textContent = "挑機 MACAU ASSEMBLED COMPUTER";
-                companyTagline.textContent = "自定砌機優惠組合";
-            }
-        }
+    <!-- 底部資訊 -->
+    <div class="footer-info">
+        <div>
+            報價有效日期：<span id="validDate" style="color: var(--text-color); margin-left: 10px;"></span>
+        </div>
+        <div>
+            附七天非人為損壞及一年原廠保養
+        </div>
+        <div>
+            (包免費送貨)
+        </div>
+    </div>
 
-        // 6. Excel 貼上功能 (更新版)
-        async function pasteFromExcel() {
-            try {
-                const text = await navigator.clipboard.readText();
-                const rows = text.trim().split('\n');
-                
-                // 定義對應關係 (Excel 行號 -> HTML ID)
-                // Excel Row 3 = CPU, Row 4 = MB, ... Row 11 = Case
-                const idMap = [
-                    'cpu',   // Excel Row 3
-                    'mb',    // Excel Row 4
-                    'ram',   // Excel Row 5
-                    'gpu',   // Excel Row 6
-                    'ssd',   // Excel Row 7
-                    'psu',   // Excel Row 8
-                    'cooler',// Excel Row 9
-                    'other', // Excel Row 10
-                    'case'   // Excel Row 11
-                ];
+    <!-- 按鈕區域 -->
+    <div class="btn-area">
+        <button class="btn btn-print" onclick="window.print()">列印 / 另存 PDF</button>
+        <button class="btn btn-excel" onclick="pasteFromExcel()">📋 讀取剪貼簿 (Excel)</button>
+        <button class="btn btn-theme" onclick="toggleTheme()">切換主題</button>
+        <button class="btn btn-add" onclick="toggleCapMode()">截圖模式</button>
+    </div>
+</div>
 
-                let filledCount = 0;
-                let promoPriceFound = false;
+<!-- 離開截圖模式按鈕 -->
+<button id="exitCapModeBtn" onclick="toggleCapMode()">離開截圖模式</button>
 
-                rows.forEach((row, index) => {
-                    const cells = row.split('\t');
-                    // Excel 複製時通常會包含 Tab 分隔符號 (型號\t數量)
-                    // 假設 B 列是型號 (cells[0])，C 列是數量 (cells[1])
-                    const model = cells[0] ? cells[0].trim() : "";
-                    const qty = cells[1] ? cells[1].trim() : "1";
+<script>
+// 1. 自動計算日期 (今日 + 3 日)
+function setValidDate() {
+    const date = new Date();
+    date.setDate(date.getDate() + 3);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    document.getElementById('validDate').textContent = `${year}年${month}月${day}日`;
+}
+
+// 2. 自動計算原價
+function calculatePrice() {
+    let promoPrice = parseFloat(document.getElementById('promoPrice').value);
+    if (isNaN(promoPrice)) {
+        document.getElementById('originalPriceDisplay').innerHTML = "0";
+        return;
+    }
+    // 計算邏輯：ROUNDUP(套餐優惠價*1.05, -3)
+    let rawPrice = promoPrice * 1.05;
+    let finalPrice = Math.ceil(rawPrice / 1000) * 1000;
+    // 顯示結果 (加千位分隔符)
+    document.getElementById('originalPriceDisplay').innerHTML = finalPrice.toLocaleString();
+}
+
+// 3. 新增項目功能
+let rowCount = 1;
+function addNewRow() {
+    rowCount++;
+    const tableBody = document.querySelector('#configTable tbody');
+    const caseRow = document.getElementById('caseRow');
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+        <td>其他${rowCount}</td>
+        <td><input type="text" class="new-item-input" placeholder=""></td>
+        <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+        <td><button type="button" class="btn btn-del-row" onclick="deleteRow(this)">刪除</button></td>
+    `;
+    tableBody.insertBefore(newRow, caseRow);
+}
+
+function deleteRow(btn) {
+    const row = btn.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+}
+
+// 4. 截圖模式切換
+function toggleCapMode() {
+    document.body.classList.toggle('cap-mode');
+}
+
+// 5. 主題切換功能
+function toggleTheme() {
+    document.body.classList.toggle('blue-theme');
+    const isBlueTheme = document.body.classList.contains('blue-theme');
+    const logoImg = document.getElementById('companyLogo');
+    const companyName = document.getElementById('companyName');
+    const companyTagline = document.getElementById('companyTagline');
+    
+    if (isBlueTheme) {
+        logoImg.src = "https://i.imgur.com/Ism8NL5.png";
+        companyName.textContent = "瓶科技有限公司";
+        companyTagline.textContent = "BOTTLE TECHNOLOGY LIMITED";
+    } else {
+        logoImg.src = "https://i.imgur.com/9o7Y7FR.jpeg";
+        companyName.textContent = "挑機 MACAU ASSEMBLED COMPUTER";
+        companyTagline.textContent = "自定砌機優惠組合";
+    }
+}
+
+// 6. Excel 貼上功能 (更新版)
+async function pasteFromExcel() {
+    try {
+        const text = await navigator.clipboard.readText();
+        const rows = text.trim().split('\n');
+        
+        // 定義對應關係 (Excel 行號 -> HTML ID)
+        // Excel Row 3 = CPU, Row 4 = MB, ... Row 11 = Case
+        const idMap = [
+            'cpu',   // Excel Row 3
+            'mb',    // Excel Row 4
+            'ram',   // Excel Row 5
+            'gpu',   // Excel Row 6
+            'ssd',   // Excel Row 7
+            'psu',   // Excel Row 8
+            'cooler',// Excel Row 9
+            'other', // Excel Row 10
+            'case'   // Excel Row 11
+        ];
+        
+        let filledCount = 0;
+        let promoPriceFound = false;
+
+        rows.forEach((row, index) => {
+            const cells = row.split('\t'); // Excel 複製時通常會包含 Tab 分隔符號 (型號\t數量)
+            // 假設 B 列是型號 (cells[0])，C 列是數量 (cells[1])
+            const model = cells[0] ? cells[0].trim() : "";
+            const qty = cells[1] ? cells[1].trim() : "1";
+            
+            // 處理規格資料
+            // index 0 對應 Excel Row 3 (CPU)
+            const excelRowNumber = index + 3;
+            
+            if (model) {
+                // 1. 填入型號
+                if (index < idMap.length) {
+                    const inputField = document.getElementById(idMap[index]);
+                    if (inputField) {
+                        inputField.value = model;
+                        filledCount++;
+                    }
                     
-                    // 處理規格資料
-                    // index 0 對應 Excel Row 3 (CPU)
-                    const excelRowNumber = index + 3; 
-
-                    if (model) {
-                        // 1. 填入型號
-                        if (index < idMap.length) {
-                            const inputField = document.getElementById(idMap[index]);
-                            if (inputField) {
-                                inputField.value = model;
-                                filledCount++;
-                            }
-                            
-                            // 2. 填入件數
-                            const rowElement = inputField ? inputField.closest('tr') : null;
-                            if (rowElement) {
-                                const selectBox = rowElement.querySelector('select.qty');
-                                if (selectBox && qty) {
-                                    if (['1', '2', '3'].includes(qty)) {
-                                        selectBox.value = qty;
-                                    }
-                                }
-                            }
-                        }
-
-                        // 3. 檢查是否為 B14 (套餐價)
-                        // 如果 Excel Row 是 14 (index + 3 = 14 => index = 11)
-                        if (excelRowNumber === 14) {
-                            // 嘗試從 B 列 (cells[0]) 或 C 列 (cells[1]) 尋找數字
-                            // 有時 Excel 複製會把標題 "套餐優惠價" 也帶過來，所以我們找數字
-                            let priceVal = parseFloat(cells[0].replace(/,/g, '')); // 嘗試解析 B14
-                            if (isNaN(priceVal) && cells[1]) {
-                                priceVal = parseFloat(cells[1].replace(/,/g, '')); // 嘗試解析 C14
-                            }
-                            
-                            if (!isNaN(priceVal)) {
-                                document.getElementById('promoPrice').value = priceVal;
-                                calculatePrice(); // 觸發價格計算
-                                promoPriceFound = true;
+                    // 2. 填入件數
+                    const rowElement = inputField ? inputField.closest('tr') : null;
+                    if (rowElement) {
+                        const selectBox = rowElement.querySelector('select.qty');
+                        if (selectBox && qty) {
+                            if (['1', '2', '3'].includes(qty)) {
+                                selectBox.value = qty;
                             }
                         }
                     }
-                });
-
-                let msg = `成功讀取 ${filledCount} 項資料！`;
-                if (promoPriceFound) {
-                    msg += " (已讀取套餐價)";
-                } else {
-                    msg += " (未檢測到套餐價，請手動輸入)";
                 }
-                alert(msg);
-
-            } catch (err) {
-                console.error('無法讀取剪貼簿:', err);
-                alert("無法讀取剪貼簿內容。請確保您已允許網頁存取剪貼簿，或是直接手動輸入。");
+                
+                // 3. 檢查是否為 B14 (套餐價)
+                // 如果 Excel Row 是 14 (index + 3 = 14 => index = 11)
+                if (excelRowNumber === 14) {
+                    // 嘗試從 B 列 (cells[0]) 或 C 列 (cells[1]) 尋找數字
+                    // 有時 Excel 複製會把標題 "套餐優惠價" 也帶過來，所以我們找數字
+                    let priceVal = parseFloat(cells[0].replace(/,/g, '')); // 嘗試解析 B14
+                    if (isNaN(priceVal) && cells[1]) {
+                        priceVal = parseFloat(cells[1].replace(/,/g, '')); // 嘗試解析 C14
+                    }
+                    if (!isNaN(priceVal)) {
+                        document.getElementById('promoPrice').value = priceVal;
+                        calculatePrice(); // 觸發價格計算
+                        promoPriceFound = true;
+                    }
+                }
             }
+        });
+        
+        let msg = `成功讀取 ${filledCount} 項資料！`;
+        if (promoPriceFound) {
+            msg += " (已讀取套餐價)";
+        } else {
+            msg += " (未檢測到套餐價，請手動輸入)";
         }
+        alert(msg);
+        
+    } catch (err) {
+        console.error('無法讀取剪貼簿:', err);
+        alert("無法讀取剪貼簿內容。請確保您已允許網頁存取剪貼簿，或是直接手動輸入。");
+    }
+}
 
-        // 初始化
-        window.onload = function() {
-            setValidDate();
-            const selects = document.querySelectorAll('.qty');
-            selects.forEach(select => select.value = "1");
-            document.getElementById('companyLogo').src = "https://i.imgur.com/9o7Y7FR.jpeg";
-        };
-    </script>
+// 初始化
+window.onload = function() {
+    setValidDate();
+    const selects = document.querySelectorAll('.qty');
+    selects.forEach(select => select.value = "1");
+    document.getElementById('companyLogo').src = "https://i.imgur.com/9o7Y7FR.jpeg";
+};
+</script>
 </body>
 </html>
