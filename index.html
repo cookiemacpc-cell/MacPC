@@ -1,523 +1,518 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>挑機報價單生成器</title>
-    <style>
-        :root {
-            /* 預設黑金風格變數 */
-            --bg-color: #333;
-            --container-bg: #444;
-            --text-color: #fff;
-            --border-color: #666;
-            --th-bg: #555;
-            --input-bg: #222;
-            --input-border: #666;
-            --highlight-color: #ffd700;
-            --price-color: #ffd700;
-            --strike-color: #ccc;
-            --table-header-text: #fff;
-        }
-        /* 白藍風格變數 */
-        body.blue-theme {
-            --bg-color: #f5f5f5;
-            --container-bg: #fff;
-            --text-color: #333;
-            --border-color: #ddd;
-            --th-bg: #e9ecef;
-            --input-bg: #fff;
-            --input-border: #ccc;
-            --highlight-color: #0056b3;
-            --price-color: #0056b3;
-            --strike-color: #999;
-            --table-header-text: #333;
-        }
-        body {
-            font-family: "Microsoft JhengHei", sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .container {
-            width: 900px;
-            background-color: var(--container-bg);
-            padding: 30px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            position: relative;
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-        /* 頂部 Logo 區域 */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .logo-area img {
-            width: 60px;
-            height: auto;
-            display: block;
-        }
-        .logo-area h1 {
-            margin: 0;
-            font-size: 24px;
-            color: var(--text-color);
-        }
-        .logo-area p {
-            margin: 5px 0 0;
-            font-size: 14px;
-            color: var(--highlight-color);
-        }
-        .contact-info {
-            text-align: right;
-            font-size: 14px;
-            color: var(--text-color);
-        }
-        /* 表格樣式 */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            background-color: var(--th-bg);
-        }
-        th {
-            background-color: var(--th-bg);
-            color: var(--table-header-text);
-            padding: 10px;
-            text-align: center;
-            width: 15%;
-            border: 1px solid var(--border-color);
-        }
-        td {
-            padding: 8px;
-            vertical-align: middle;
-            text-align: center;
-            border: 1px solid var(--border-color);
-        }
-        /* 輸入框樣式 */
-        input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 8px;
-            background-color: var(--input-bg);
-            border: 1px solid var(--input-border);
-            color: var(--text-color);
-            box-sizing: border-box;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        input[type="text"]:focus, input[type="number"]:focus {
-            border-color: var(--highlight-color);
-            outline: none;
-        }
-        /* 價格區域 */
-        .price-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid var(--border-color);
-        }
-        .price-label {
-            font-size: 18px;
-            color: var(--text-color);
-        }
-        .price-value {
-            font-size: 48px;
-            color: var(--price-color);
-            font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            align-items: center;
-        }
-        .strikethrough {
-            text-decoration: line-through;
-            opacity: 0.8;
-        }
-        .currency {
-            font-size: 24px;
-            color: var(--price-color);
-            font-weight: bold;
-            margin-left: 5px;
-        }
-        /* 底部資訊 */
-        .footer-info {
-            margin-top: 30px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--text-color);
-        }
-        .highlight {
-            color: var(--highlight-color);
-        }
-        /* 按鈕區域 */
-        .btn-area {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .btn-add {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .btn-print {
-            background-color: var(--highlight-color);
-            color: #000;
-        }
-        .btn-del-row {
-            background-color: #f44336;
-            color: white;
-            padding: 5px 10px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-        .btn-theme {
-            background-color: #007bff;
-            color: white;
-        }
-        .btn-excel {
-            background-color: #217346;
-            color: white;
-        }
-        .btn-quote {
-            background-color: #6f42c1;
-            color: white;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>挑機報價單生成器</title>
+<style>
+:root {
+    --bg-color: #333;
+    --container-bg: #444;
+    --text-color: #fff;
+    --border-color: #666;
+    --th-bg: #555;
+    --input-bg: #222;
+    --input-border: #666;
+    --highlight-color: #ffd700;
+    --price-color: #ffd700;
+    --strike-color: #ccc;
+    --table-header-text: #fff;
+}
 
-        /* --- 截圖模式 (Cap Mode) 樣式 --- */
-        body.cap-mode .container {
-            box-shadow: none;
-        }
-        body.cap-mode input, body.cap-mode select {
-            background-color: transparent;
-            border: none;
-            color: var(--text-color);
-            padding-left: 0;
-            font-size: 16px;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            text-align: center;
-        }
-        body.cap-mode th {
-            background-color: transparent;
-            color: var(--text-color);
-            padding: 0;
-            border: none;
-        }
-        body.cap-mode td {
-            border: none;
-        }
-        body.cap-mode .btn-area, body.cap-mode .btn-del-row, body.cap-mode .add-row-btn {
-            display: none !important;
-        }
-        /* 截圖模式下的離開按鈕 */
-        #exitCapModeBtn {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background-color: #fff;
-            color: #000;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            z-index: 999;
-        }
-        body.cap-mode #exitCapModeBtn {
-            display: block;
-        }
-    </style>
+body.blue-theme {
+    --bg-color: #f5f5f5;
+    --container-bg: #fff;
+    --text-color: #333;
+    --border-color: #ddd;
+    --th-bg: #e9ecef;
+    --input-bg: #fff;
+    --input-border: #ccc;
+    --highlight-color: #0056b3;
+    --price-color: #0056b3;
+    --strike-color: #999;
+    --table-header-text: #333;
+}
+
+body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    width: 900px;
+    background-color: var(--container-bg);
+    padding: 30px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    position: relative;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-area img {
+    width: 60px;
+    height: auto;
+    display: block;
+}
+
+.logo-area h1 {
+    margin: 0;
+    font-size: 24px;
+    color: var(--text-color);
+}
+
+.logo-area p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: var(--highlight-color);
+}
+
+.contact-info {
+    text-align: right;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: var(--th-bg);
+}
+
+th {
+    background-color: var(--th-bg);
+    color: var(--table-header-text);
+    padding: 10px;
+    text-align: center;
+    width: 15%;
+    border: 1px solid var(--border-color);
+}
+
+td {
+    padding: 8px;
+    vertical-align: middle;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+input[type="text"], input[type="number"], select {
+    width: 100%;
+    padding: 8px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-color);
+    box-sizing: border-box;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+input[type="text"]:focus, input[type="number"]:focus {
+    border-color: var(--highlight-color);
+    outline: none;
+}
+
+.price-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border-color);
+}
+
+.price-label {
+    font-size: 18px;
+    color: var(--text-color);
+}
+
+.strikethrough {
+    text-decoration: line-through;
+    opacity: 0.8;
+}
+
+.currency {
+    font-size: 24px;
+    color: var(--price-color);
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.footer-info {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-color);
+}
+
+.btn-area {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.btn-add {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-print {
+    background-color: var(--highlight-color);
+    color: #000;
+}
+
+.btn-del-row {
+    background-color: #f44336;
+    color: white;
+    padding: 5px 10px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.btn-theme {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-excel {
+    background-color: #217346;
+    color: white;
+}
+
+.btn-quote {
+    background-color: #6f42c1;
+    color: white;
+}
+
+body.cap-mode .container {
+    box-shadow: none;
+    background-color: transparent;
+}
+
+body.cap-mode .btn-area,
+body.cap-mode .btn-del-row,
+body.cap-mode .add-row-btn {
+    display: none !important;
+}
+
+body.cap-mode th {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 10px;
+}
+
+body.cap-mode td {
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    padding: 8px;
+}
+
+body.cap-mode input,
+body.cap-mode select {
+    background-color: transparent;
+    border: none;
+    color: var(--text-color);
+    padding: 0;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+    box-shadow: none;
+}
+
+body.cap-mode td:nth-child(2) input {
+    text-align: left;
+    font-weight: bold;
+}
+
+body.cap-mode #promoPrice {
+    border-bottom: none !important;
+    font-size: 48px;
+}
+
+#exitCapModeBtn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background-color: #fff;
+    color: #000;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 999;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+body.cap-mode #exitCapModeBtn {
+    display: block;
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- 頂部資訊 -->
-        <div class="header">
-            <div class="logo-area">
-                <img src="https://i.imgur.com/9o7Y7FR.jpeg" alt="挑機 Logo" id="companyLogo">
-                <div>
-                    <h1 id="companyName">挑機 MACAU ASSEMBLED COMPUTER</h1>
-                    <p id="companyTagline">自定砌機優惠組合</p>
-                </div>
-            </div>
-            <div class="contact-info">
-                <div>2852 1710</div>
-                <div>蛤巷5號地下</div>
+<div class="container">
+    <div class="header">
+        <div class="logo-area">
+            <img src="https://i.imgur.com/9o7Y7FR.jpeg" alt="挑機 Logo" id="companyLogo">
+            <div>
+                <h1 id="companyName">挑機 MACAU ASSEMBLED COMPUTER</h1>
+                <p id="companyTagline">自定砌機優惠組合</p>
             </div>
         </div>
-
-        <!-- 規格表格 -->
-        <table id="configTable">
-            <thead>
-                <tr>
-                    <th style="width: 15%;">項目</th>
-                    <th style="width: 65%;">型號</th>
-                    <th style="width: 20%;">件數</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>CPU</td>
-                    <td><input type="text" id="cpu" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>主板</td>
-                    <td><input type="text" id="mb" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>RAM</td>
-                    <td><input type="text" id="ram" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>顯卡</td>
-                    <td><input type="text" id="gpu" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>系統盤</td>
-                    <td><input type="text" id="ssd" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>火牛</td>
-                    <td><input type="text" id="psu" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>散熱器</td>
-                    <td><input type="text" id="cooler" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td>其他</td>
-                    <td><input type="text" id="other" value="Windows 11 Home 試用版安裝 + 送貨到樓下"></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-                <tr>
-                    <td colspan="3" style="padding: 5px 0;">
-                        <button type="button" class="btn btn-add add-row-btn" onclick="addNewRow()">+ 新增項目</button>
-                    </td>
-                </tr>
-                <tr id="caseRow">
-                    <td>機箱</td>
-                    <td><input type="text" id="case" placeholder=""></td>
-                    <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <!-- 價格區 -->
-        <div class="price-section">
-            <div style="display: flex; flex-direction: column;">
-                <span class="price-label">套餐優惠價</span>
-                <span class="price-label strikethrough" style="font-size: 14px; margin-top:5px;">原價</span>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                <div style="display: flex; align-items: center;">
-                    <input type="number" id="promoPrice" placeholder="輸入優惠價" style="width: 150px; text-align: right; font-size: 36px; color: var(--price-color); font-weight: bold; background: transparent; border: none; border-bottom: 1px solid var(--highlight-color);" oninput="calculatePrice()">
-                    <span class="currency" style="font-size: 24px; margin-left: 5px;">MOP</span>
-                </div>
-                <div id="originalPriceDisplay" class="strikethrough" style="font-size: 24px; color: var(--strike-color); margin-top: 5px;">0</div>
-            </div>
-        </div>
-
-        <!-- 底部資訊 -->
-        <div class="footer-info">
-            <div>
-                報價有效日期：<span id="validDate" style="color: var(--text-color); margin-left: 10px;"></span>
-            </div>
-            <div>
-                附七天非人為損壞及一年原廠保養
-            </div>
-            <div>
-                (包免費送貨)
-            </div>
-        </div>
-
-        <!-- 按鈕區域 -->
-        <div class="btn-area">
-            <button class="btn btn-print" onclick="window.print()">列印 / 另存 PDF</button>
-            <button class="btn btn-excel" onclick="goToExcel()">到 Excel</button>
-            <button class="btn btn-quote" onclick="goToQuoteTool()">到報價器</button>
-            <button class="btn btn-theme" onclick="toggleTheme()">切換主題</button>
-            <button class="btn btn-add" onclick="toggleCapMode()">截圖模式</button>
+        <div class="contact-info">
+            <div>2852 1710</div>
+            <div>蛤巷 5 號地下</div>
         </div>
     </div>
 
-    <!-- 離開截圖模式按鈕 -->
-    <button id="exitCapModeBtn" onclick="toggleCapMode()">離開截圖模式</button>
-
-    <script>
-        function setValidDate() {
-            const date = new Date();
-            date.setDate(date.getDate() + 3);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            document.getElementById('validDate').textContent = `${year}年${month}月${day}日`;
-        }
-
-        function calculatePrice() {
-            let promoPrice = parseFloat(document.getElementById('promoPrice').value);
-            if (isNaN(promoPrice)) {
-                document.getElementById('originalPriceDisplay').innerHTML = "0";
-                return;
-            }
-            let rawPrice = promoPrice * 1.05;
-            let finalPrice = Math.ceil(rawPrice / 1000) * 1000;
-            document.getElementById('originalPriceDisplay').innerHTML = finalPrice.toLocaleString();
-        }
-
-        let rowCount = 1;
-        function addNewRow() {
-            rowCount++;
-            const tableBody = document.querySelector('#configTable tbody');
-            const caseRow = document.getElementById('caseRow');
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td>其他${rowCount}</td>
-                <td><input type="text" class="new-item-input" placeholder=""></td>
+    <table id="configTable">
+        <thead>
+            <tr>
+                <th style="width: 15%;">項目</th>
+                <th style="width: 65%;">型號</th>
+                <th style="width: 20%;">件數</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>CPU</td>
+                <td><input type="text" id="cpu"></td>
                 <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
-            `;
-            tableBody.insertBefore(newRow, caseRow);
-        }
+            </tr>
+            <tr>
+                <td>主板</td>
+                <td><input type="text" id="mb"></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>RAM</td>
+                <td><input type="text" id="ram"></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>顯卡</td>
+                <td><input type="text" id="gpu"></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>系統盤</td>
+                <td><input type="text" id="ssd"></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>火牛</td>
+                <td><input type="text" id="psu"></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>散熱器</td>
+                <td><input type="text" id="cooler"></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td>其他</td>
+                <td><input type="text" id="other" value="Windows 11 Home 試用版安裝 + 送貨到樓下"></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+            <tr>
+                <td colspan="3" style="padding: 5px 0;">
+                    <button type="button" class="btn btn-add add-row-btn" onclick="addNewRow()">+ 新增項目</button>
+                </td>
+            </tr>
+            <tr id="caseRow">
+                <td>機箱</td>
+                <td><input type="text" id="case"></td>
+                <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+            </tr>
+        </tbody>
+    </table>
 
-        function toggleCapMode() {
-            document.body.classList.toggle('cap-mode');
-        }
+    <div class="price-section">
+        <div style="display: flex; flex-direction: column;">
+            <span class="price-label">套餐優惠價</span>
+            <span class="price-label strikethrough" style="font-size: 14px; margin-top:5px;">原價</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+            <div style="display: flex; align-items: center;">
+                <input type="number" id="promoPrice" placeholder="輸入優惠價" style="width: 150px; text-align: right; font-size: 36px; color: var(--price-color); font-weight: bold; background: transparent; border: none; border-bottom: 1px solid var(--highlight-color);" oninput="calculatePrice()">
+                <span class="currency">MOP</span>
+            </div>
+            <div id="originalPriceDisplay" class="strikethrough" style="font-size: 24px; color: var(--strike-color); margin-top: 5px;">0</div>
+        </div>
+    </div>
 
-        function toggleTheme() {
-            document.body.classList.toggle('blue-theme');
-            const isBlueTheme = document.body.classList.contains('blue-theme');
-            const logoImg = document.getElementById('companyLogo');
-            const companyName = document.getElementById('companyName');
-            const companyTagline = document.getElementById('companyTagline');
-            if (isBlueTheme) {
-                logoImg.src = "https://i.imgur.com/Ism8NL5.png";
-                companyName.textContent = "瓶科技有限公司";
-                companyTagline.textContent = "BOTTLE TECHNOLOGY LIMITED";
-            } else {
-                logoImg.src = "https://i.imgur.com/9o7Y7FR.jpeg";
-                companyName.textContent = "挑機 MACAU ASSEMBLED COMPUTER";
-                companyTagline.textContent = "自定砌機優惠組合";
-            }
-        }
+    <div class="footer-info">
+        <div>報價有效日期：<span id="validDate" style="color: var(--text-color); margin-left: 10px;"></span></div>
+        <div>附七天非人為損壞及一年原廠保養</div>
+        <div>(包免費送貨)</div>
+    </div>
 
-        async function pasteFromExcel() {
-            try {
-                const text = await navigator.clipboard.readText();
-                const rows = text.trim().split('\n');
+    <div class="btn-area">
+        <button class="btn btn-print" onclick="window.print()">列印 / 另存 PDF</button>
+        <button class="btn btn-excel" onclick="goToExcel()">到 Excel</button>
+        <button class="btn btn-quote" onclick="goToQuoteTool()">到報價器</button>
+        <button class="btn btn-excel" onclick="pasteFromExcel()">📋 讀取剪貼簿 (Excel)</button>
+        <button class="btn btn-theme" onclick="toggleTheme()">切換主題</button>
+        <button class="btn btn-add" onclick="toggleCapMode()">截圖模式</button>
+    </div>
+</div>
 
-                const idMap = [
-                    'cpu',
-                    'mb',
-                    'ram',
-                    'gpu',
-                    'ssd',
-                    'psu',
-                    'cooler',
-                    'other',
-                    'case'
-                ];
+<button id="exitCapModeBtn" onclick="toggleCapMode()">離開截圖模式</button>
 
-                let filledCount = 0;
-                let promoPriceFound = false;
+<script>
+function setValidDate() {
+    const date = new Date();
+    date.setDate(date.getDate() + 3);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    document.getElementById('validDate').textContent = `${year}年${month}月${day}日`;
+}
 
-                rows.forEach((row, index) => {
-                    const cells = row.split('\t');
-                    const model = cells[0] ? cells[0].trim() : "";
-                    const qty = cells[1] ? cells[1].trim() : "1";
-                    const excelRowNumber = index + 3;
+function calculatePrice() {
+    let promoPrice = parseFloat(document.getElementById('promoPrice').value);
+    if (isNaN(promoPrice)) {
+        document.getElementById('originalPriceDisplay').innerHTML = "0";
+        return;
+    }
+    let rawPrice = promoPrice * 1.05;
+    let finalPrice = Math.ceil(rawPrice / 1000) * 1000;
+    document.getElementById('originalPriceDisplay').innerHTML = finalPrice.toLocaleString();
+}
 
-                    if (model) {
-                        if (index < idMap.length) {
-                            const inputField = document.getElementById(idMap[index]);
-                            if (inputField) {
-                                inputField.value = model;
-                                filledCount++;
-                            }
+let rowCount = 1;
+function addNewRow() {
+    rowCount++;
+    const tableBody = document.querySelector('#configTable tbody');
+    const caseRow = document.getElementById('caseRow');
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+        <td>其他${rowCount}</td>
+        <td><input type="text" class="new-item-input"></td>
+        <td><select class="qty"><option>1</option><option>2</option><option>3</option></select></td>
+    `;
+    tableBody.insertBefore(newRow, caseRow);
+}
 
-                            const rowElement = inputField ? inputField.closest('tr') : null;
-                            if (rowElement) {
-                                const selectBox = rowElement.querySelector('select.qty');
-                                if (selectBox && qty) {
-                                    if (['1', '2', '3'].includes(qty)) {
-                                        selectBox.value = qty;
-                                    }
-                                }
-                            }
-                        }
+function toggleCapMode() {
+    document.body.classList.toggle('cap-mode');
+}
 
-                        if (excelRowNumber === 14) {
-                            let priceVal = parseFloat(cells[0].replace(/,/g, ''));
-                            if (isNaN(priceVal) && cells[1]) {
-                                priceVal = parseFloat(cells[1].replace(/,/g, ''));
-                            }
+function toggleTheme() {
+    document.body.classList.toggle('blue-theme');
+    const isBlueTheme = document.body.classList.contains('blue-theme');
+    const logoImg = document.getElementById('companyLogo');
+    const companyName = document.getElementById('companyName');
+    const companyTagline = document.getElementById('companyTagline');
+    if (isBlueTheme) {
+        logoImg.src = "https://i.imgur.com/Ism8NL5.png";
+        companyName.textContent = "瓶科技有限公司";
+        companyTagline.textContent = "BOTTLE TECHNOLOGY LIMITED";
+    } else {
+        logoImg.src = "https://i.imgur.com/9o7Y7FR.jpeg";
+        companyName.textContent = "挑機 MACAU ASSEMBLED COMPUTER";
+        companyTagline.textContent = "自定砌機優惠組合";
+    }
+}
 
-                            if (!isNaN(priceVal)) {
-                                document.getElementById('promoPrice').value = priceVal;
-                                calculatePrice();
-                                promoPriceFound = true;
-                            }
+async function pasteFromExcel() {
+    try {
+        const text = await navigator.clipboard.readText();
+        const rows = text.trim().split('\n');
+        const idMap = ['cpu','mb','ram','gpu','ssd','psu','cooler','other','case'];
+        let filledCount = 0;
+        let promoPriceFound = false;
+
+        rows.forEach((row, index) => {
+            const cells = row.split('\t');
+            const model = cells[0] ? cells[0].trim() : "";
+            const qty = cells[1] ? cells[1].trim() : "1";
+            const excelRowNumber = index + 3;
+
+            if (model) {
+                if (index < idMap.length) {
+                    const inputField = document.getElementById(idMap[index]);
+                    if (inputField) {
+                        inputField.value = model;
+                        filledCount++;
+                    }
+                    const rowElement = inputField ? inputField.closest('tr') : null;
+                    if (rowElement) {
+                        const selectBox = rowElement.querySelector('select.qty');
+                        if (selectBox && ['1', '2', '3'].includes(qty)) {
+                            selectBox.value = qty;
                         }
                     }
-                });
-
-                let msg = `成功讀取 ${filledCount} 項資料！`;
-                if (promoPriceFound) {
-                    msg += " (已讀取套餐價)";
-                } else {
-                    msg += " (未檢測到套餐價，請手動輸入)";
                 }
-                alert(msg);
 
-            } catch (err) {
-                console.error('無法讀取剪貼簿:', err);
-                alert("無法讀取剪貼簿內容。請確保您已允許網頁存取剪貼簿，或是直接手動輸入。");
+                if (excelRowNumber === 14) {
+                    let priceVal = parseFloat((cells[0] || '').replace(/,/g, ''));
+                    if (isNaN(priceVal) && cells[1]) {
+                        priceVal = parseFloat(cells[1].replace(/,/g, ''));
+                    }
+                    if (!isNaN(priceVal)) {
+                        document.getElementById('promoPrice').value = priceVal;
+                        calculatePrice();
+                        promoPriceFound = true;
+                    }
+                }
             }
-        }
+        });
 
-        // 新增：到 Excel
-        function goToExcel() {
-            window.open("https://q50p.sharepoint.com/:x:/r/sites/msteams_7a3794/_layouts/15/Doc.aspx?sourcedoc=%7B6ad8f3f1-e026-4bf3-a2d4-9326aed9d309%7D&action=edit&wdinitialsession=da6f9961-a63b-bcd7-3ccb-3e02aab76361&wdrldsc=68&wdrldc=1&wdrldr=InternalError&wdenableroaming=1&wdlci=", "_blank");
-        }
+        let msg = `成功讀取 ${filledCount} 項資料！`;
+        msg += promoPriceFound ? " (已讀取套餐價)" : " (未檢測到套餐價，請手動輸入)";
+        alert(msg);
 
-        // 新增：到報價器
-        function goToQuoteTool() {
-            window.open("http://10.0.0.171:8501/挑機報價單生成器3.html", "_blank");
-        }
+    } catch (err) {
+        console.error('無法讀取剪貼簿:', err);
+        alert("無法讀取剪貼簿內容。請確保您已允許網頁存取剪貼簿，或是直接手動輸入。");
+    }
+}
 
-        window.onload = function() {
-            setValidDate();
-            const selects = document.querySelectorAll('.qty');
-            selects.forEach(select => select.value = "1");
-            document.getElementById('companyLogo').src = "https://i.imgur.com/9o7Y7FR.jpeg";
-        };
-    </script>
+function goToExcel() {
+    window.open("https://q50p.sharepoint.com/:x:/r/sites/msteams_7a3794/_layouts/15/Doc.aspx?sourcedoc=%7B6ad8f3f1-e026-4bf3-a2d4-9326aed9d309%7D&action=edit&wdinitialsession=da6f9961-a63b-bcd7-3ccb-3e02aab76361&wdrldsc=68&wdrldc=1&wdrldr=InternalError&wdenableroaming=1&wdlci=", "_blank");
+}
+
+function goToQuoteTool() {
+    window.open("http://10.0.0.171:8501/", "_blank");
+}
+
+window.onload = function() {
+    setValidDate();
+    const selects = document.querySelectorAll('.qty');
+    selects.forEach(select => select.value = "1");
+    document.getElementById('companyLogo').src = "https://i.imgur.com/9o7Y7FR.jpeg";
+};
+</script>
 </body>
 </html>
